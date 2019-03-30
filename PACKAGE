@@ -1,0 +1,19 @@
+package: Romeo Color/Image Management (XML)
+author: Ned Wilson
+organization: QPPE
+contact: ned@qppe.tech
+version: 0.0.3
+requires: 'source_setup-4.1.rvpkg'
+rv: 7.3.1
+url: http://qppe.tech
+
+modes: 
+  - file: romeo_source_setup.py
+    menu: ''
+    shortcut: ''
+    event: ''
+    load: immediate
+    
+description: |
+
+  <p>Applies shot-specific CSP files to EXR files per the Romeo production delivery spec.</p>
