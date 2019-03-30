@@ -2,7 +2,7 @@ package: Romeo Color/Image Management (XML)
 author: Ned Wilson
 organization: QPPE
 contact: ned@qppe.tech
-version: 0.0.1
+version: 0.1
 requires: 'source_setup-4.1.rvpkg'
 rv: 7.3.1
 url: http://qppe.tech

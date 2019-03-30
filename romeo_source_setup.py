@@ -56,7 +56,7 @@ class RomeoSourceSetup(rvtypes.MinorMode):
                   [("after-session-read", self._set_display_to_no_correction, ""),
                    ("source-group-complete", self.source_setup_romeo, "Color Management"),
                    ("key-down--f6", self.toggle_wipes, "Over Mode and Wipes on/off")],
-                  [("Color", [("Romeo Shot LUT", self.toggle_luts, "L", self.lut_menu_state)])],
+                  [("Color", [("Romeo Shot LUT", self.toggle_look, "alt meta l", self.look_menu_state)])],
                   # defines custom menu item for matte
                   "source_setup", 1)  # 1 will put this after the default "source_setup"
 
@@ -172,10 +172,7 @@ class RomeoSourceSetup(rvtypes.MinorMode):
                 self._logger.warning('Environment variable IH_SHOW_CFG_PATH is not defined.')
             # if there's not a file path set for the file lut,
             # pop up a dialog to ask for one
-            show_cfg_file = commands.openFileDialog(
-                False, 0, ".*\.cfg", '/Volumes/romeo_inhouse/romeo/SHARED/romeo/lib/',
-                "Choose the Romeo config file:"
-            )
+            show_cfg_file = commands.openFileDialog(False, False, False, '*', '/Volumes/romeo_inhouse/romeo/SHARED/romeo/lib/')
             if show_cfg_file and not os.path.exists(show_cfg_file[0]):
                 # if we can't see the path, reset the path so
                 # that we can ask for it again
@@ -209,7 +206,7 @@ class RomeoSourceSetup(rvtypes.MinorMode):
         if not file_name:
             self._logger.warning("Method argument file_name is set to None.")
             return
-        if not os.path.exists(file_name):
+        if not os.path.exists(os.path.dirname(file_name)):
             self._logger.warning("Not sure how this happened, but looks like we were called with a file_name parameter that doesn't exist.")
             self._logger.warning("Unable to find %s on filesystem."%file_name)
             return
@@ -463,7 +460,7 @@ class RomeoSourceSetup(rvtypes.MinorMode):
             for source in commands.sources():
                 if source[0] == source_path:
                     start_frame = int(source[1])
-                    end_frame = int(source[-1])
+                    end_frame = int(source[2])
                     break
             if self._handles_on:
                 commands.setIntProperty("%s.cut.in" % source_node, [start_frame + 9], True)
