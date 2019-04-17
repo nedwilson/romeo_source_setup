@@ -143,7 +143,7 @@ class RomeoSourceSetup(rvtypes.MinorMode):
                 # profile
                 commands.setIntProperty("%s.node.active" % alexa_node, [0], True)
                 commands.setIntProperty("%s.lut.active" % look_node, [0], True)
-                commands.setIntProperty("%s.node.active" % rec709_node, [1], True)
+                commands.setIntProperty("%s.node.active" % rec709_node, [0], True)
                 
     def _set_display_to_no_correction(self, event):
         """
