@@ -66,6 +66,11 @@ class RomeoSourceSetup(rvtypes.MinorMode):
         self._show_cfg = ConfigParser.ConfigParser()
         self._show_cfg.read(self._retrieve_cfg_path())
         self._shot_regexp = re.compile(self._show_cfg.get(self._show_code, 'shot_regexp'))
+        self._sequence_regexp = re.compile(self._show_cfg.get(self._show_code, 'sequence_regexp'))
+        self._production_root = self._show_cfg.get('production_root', sys.platform)
+        self._inhouse_root = self._show_cfg.get('show_root', sys.platform)
+        self._shot_dir_format = self._show_cfg.get(self._show_code, 'shot_dir_format')
+        self._sequence_dir_format = self._show_cfg.get(self._show_code, 'seq_dir_format')
         self._mainplate_regexp = re.compile(self._show_cfg.get(self._show_code, 'mainplate_regexp'))
         self._shot_color_dir = self._show_cfg.get(self._show_code, 'cdl_dir_format').format(pathsep = os.path.sep)
 
@@ -211,22 +216,42 @@ class RomeoSourceSetup(rvtypes.MinorMode):
             self._logger.warning("Unable to find %s on filesystem."%file_name)
             return
 
-        # now that we have a valid filename, let's split up the path.
-        path_array = file_name.split(os.path.sep)
-        shot_root_dir_array = []
-        for path_element in path_array:
-            shot_root_dir_array.append(path_element)
-            if self._shot_regexp.search(path_element):
-                break
-        shot_root_dir = os.path.sep.join(shot_root_dir_array)
-        self._logger.info('Shot root directory: %s'%shot_root_dir)
+        # are we on the In-house shot tree?
+        lcl_show_root = self._production_root
+        if file_name.startswith(self._inhouse_root):
+            lcl_show_root = self._in_house_root
+
+        # basename of file
+        lcl_file_base = os.path.basename(file_name)
+        lcl_shot = None
+        lcl_sequence = None
+        lcl_entity_dir = None
+        # Are we a shot, sequence, or nothing at all?
+        shot_match = self._shot_regexp.search(lcl_file_base)
+        sequence_match = self._sequence_regexp.search(lcl_file_base)
+        if shot_match:
+            lcl_shot = shot_match.groupdict()['shot']
+            lcl_sequence = shot_match.groupdict()['sequence']
+            lcl_entity_dir = self._shot_dir_format.format(show_root = lcl_show_root, pathsep = os.path.sep, sequence = lcl_sequence, shot = lcl_shot)
+        else:
+            if sequence_match:
+                lcl_shot = 'SHARED'
+                lcl_sequence = sequence_match.groupdict()['sequence']
+                lcl_entity_dir = self._shot_dir_format.format(show_root=lcl_show_root, pathsep=os.path.sep,
+                                                              sequence=lcl_sequence, shot=lcl_shot)
+            else:
+                self._logger.warning('File name %s does not match the pattern for either a sequence or a shot.' % lcl_file_base)
+                return
+
+        shot_root_dir = lcl_entity_dir
+        self._logger.info('Entity root directory: %s'%shot_root_dir)
         shot_color_dir = os.path.join(shot_root_dir, self._shot_color_dir)
-        self._logger.info('Shot color directory: %s'%shot_color_dir)
+        self._logger.info('Entity color directory: %s'%shot_color_dir)
         if not os.path.exists(shot_color_dir):
-            self._logger.warning('Shot color directory %s does not exist.'%shot_color_dir)
+            self._logger.warning('Entity color directory %s does not exist.'%shot_color_dir)
             return
         if not os.path.isdir(shot_color_dir):
-            self._logger.warning('Shot color directory %s is not a directory.'%shot_color_dir)
+            self._logger.warning('Entity color directory %s is not a directory.'%shot_color_dir)
             return
 
 
