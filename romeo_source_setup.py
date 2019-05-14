@@ -43,8 +43,8 @@ class RomeoSourceSetup(rvtypes.MinorMode):
 
     def __init__(self):
         rvtypes.MinorMode.__init__(self)
-
         self._look_lut_path = None
+        self._look_lut_dict = {}
         # Since we want the matte to stay on for all frames regardless of file type, we manage
         # the matte state with a global variable
         # since we're doing the slate management as a custom thing, we need to store whether
@@ -134,14 +134,20 @@ class RomeoSourceSetup(rvtypes.MinorMode):
             if os.path.splitext(file_name)[-1].lower() in [".exr", ".dpx"]:
                 # check prefs to see if there's a saved directory to 
                 # look for shot cdls
-                if not self._look_lut_path:
-                    self._look_lut_path = self._retrieve_csp_path(file_name)
+                # Use a dictionary instead of a string
+                lcl_file_base = os.path.basename(file_name).split('.')[0]
+                lcl_lut_path = None
+                try:
+                    lcl_lut_path = self._look_lut_dict[lcl_file_base]
+                except KeyError:
+                    lcl_lut_path = self._retrieve_csp_path(file_name)
+                    self._look_lut_dict[lcl_file_base] = lcl_lut_path
 
                 # now disable our LinearToSRGB node since that's only
                 # in the pipeline for non-EXR files
                 commands.setIntProperty("%s.node.active" % rec709_node, [0], True)
                 self.do_exr_linearization(lin_node)
-                self.do_exr_look_setup(look_node)
+                self.do_exr_look_setup(look_node, lcl_lut_path)
             else:
                 # if we're not dealing with an EXR just make sure we
                 # convert to sRGB to account for the forced display
@@ -334,13 +340,13 @@ class RomeoSourceSetup(rvtypes.MinorMode):
         commands.setIntProperty("%s.color.logtype" % lin_node, [0], True)
         commands.setIntProperty("%s.color.sRGB2linear" % lin_node, [0], True)
 
-    def do_exr_look_setup(self, look_node):
+    def do_exr_look_setup(self, look_node, look_path):
         """
         Takes the shot-specific csp (or cube) file that was previously located and applies it.
         
         :param look_node: RVLookLUT node
+        :param look_path: string, containing path to look LUT file
         """
-        look_path = self._look_lut_path
         # if the file isn't bundled with the RV package, we can't do anything, so exit
         if not os.path.exists(look_path):
             self._logger.warning("Look LUT not found at: %s" % look_path)
