@@ -348,6 +348,9 @@ class RomeoSourceSetup(rvtypes.MinorMode):
         :param look_path: string, containing path to look LUT file
         """
         # if the file isn't bundled with the RV package, we can't do anything, so exit
+        if not look_path:
+            self._logger.warning("Look LUT parameter is None!")
+            return
         if not os.path.exists(look_path):
             self._logger.warning("Look LUT not found at: %s" % look_path)
             return
