@@ -282,10 +282,10 @@ class RomeoSourceSetup(rvtypes.MinorMode):
         csp_files.sort(key=lambda x: os.stat(x).st_mtime, reverse=True)
         cube_files.sort(key=lambda x: os.stat(x).st_mtime, reverse=True)
         likely_lut = None
-        for csp_file in csp_files:
-            if self._mainplate_regexp.search(csp_file):
-                likely_lut = csp_file
-                break
+        # for csp_file in csp_files:
+        #     if self._mainplate_regexp.search(csp_file):
+        #         likely_lut = csp_file
+        #         break
         if not likely_lut and len(csp_files) > 0:
             likely_lut = csp_files[0]
 
