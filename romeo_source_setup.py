@@ -225,7 +225,7 @@ class RomeoSourceSetup(rvtypes.MinorMode):
         # are we on the In-house shot tree?
         lcl_show_root = self._production_root
         if file_name.startswith(self._inhouse_root):
-            lcl_show_root = self._in_house_root
+            lcl_show_root = self._inhouse_root
 
         # basename of file
         lcl_file_base = os.path.basename(file_name)
